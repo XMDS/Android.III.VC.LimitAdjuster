@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Android_III_VC_LimitAdjuster.cpp" />
+    <ClCompile Include="ARMHook\ARMHook.cpp">
+      <Filter>ARMHook</Filter>
+    </ClCompile>
+    <ClCompile Include="ARMHook\patch.cpp">
+      <Filter>ARMHook</Filter>
+    </ClCompile>
+    <ClCompile Include="ini\inireader.c">
+      <Filter>ini</Filter>
+    </ClCompile>
+    <ClCompile Include="ini\minIni.c">
+      <Filter>ini</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Android_III_VC_LimitAdjuster.h" />
+    <ClInclude Include="CLEO_SDK\cleo.h">
+      <Filter>cleo_sdk</Filter>
+    </ClInclude>
+    <ClInclude Include="ARMHook\ARMHook.h">
+      <Filter>ARMHook</Filter>
+    </ClInclude>
+    <ClInclude Include="ARMHook\call.h">
+      <Filter>ARMHook</Filter>
+    </ClInclude>
+    <ClInclude Include="ARMHook\patch.h">
+      <Filter>ARMHook</Filter>
+    </ClInclude>
+    <ClInclude Include="ini\inireader.h">
+      <Filter>ini</Filter>
+    </ClInclude>
+    <ClInclude Include="ini\minGlue.h">
+      <Filter>ini</Filter>
+    </ClInclude>
+    <ClInclude Include="ini\minIni.h">
+      <Filter>ini</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="cleo_sdk">
+      <UniqueIdentifier>{d256f820-b850-4abd-b4cb-8e0ab83a1924}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ARMHook">
+      <UniqueIdentifier>{77e7daf8-a33d-4578-8cb7-7ad9bab08682}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ini">
+      <UniqueIdentifier>{a2efc404-dddb-43cc-aa5a-b059f545cd0a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="ARMHook\libsubstrate-armv7a_Cydia.a">
+      <Filter>ARMHook</Filter>
+    </Library>
+  </ItemGroup>
+</Project>
