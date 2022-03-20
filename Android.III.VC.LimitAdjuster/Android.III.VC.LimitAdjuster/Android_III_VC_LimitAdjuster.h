@@ -3,16 +3,31 @@
 class Android_III_VC_LimitAdjuster
 {
 public:
-	//void SetIDELimit(unsigned int iObjectsType1);
+	void SetIDEObjsLimit(unsigned int Objs);
+	void SetIDETobjLimit(unsigned int Tobj);
+
+	void SetModelIDLimit(unsigned int mID);
+
 	void SetPtrNodePoolLimit(unsigned int nPtrNode);
 	void SetEntryInfoNodePoolLimit(unsigned int nEntryInfoNode);
 
+	void SetPedPoolLimit(unsigned int nPed);
+	void SetVehiclePoolLimit(unsigned int nVehicle);
+
 	void SetBuildingPoolLimit(unsigned int nBuilding);
+	void SetTreadablePoolLimit(unsigned int nTreadable);
 	void SetObjectPoolLimit(unsigned int nObject);
 
 	void SetDummyPoolLimit(unsigned int nDummy);
+	void SetAudioScriptObjectPoolLimit(unsigned int nAudioScriptObject);
+
 	void SetColModelPoolLimit(unsigned int nColModel);
+
+	enum eLimitType
+	{
+		objs = 0,
+		tobj = 1
+	};
 };
 
 Android_III_VC_LimitAdjuster LimitAdjuster;
-
