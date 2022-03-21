@@ -37,6 +37,7 @@ namespace ARMHook
 	//by fastamn92
 	void patch::NOPinstructions(eInstructionSet sourceInstructionSet, uintptr_t dwAddress, int iSize)
 	{
+		hook::unprotect(dwAddress, iSize);
 		if (sourceInstructionSet == INSTRUCTION_SET_THUMB)
 		{
 			for (int i = 0; i < iSize; i += 2)

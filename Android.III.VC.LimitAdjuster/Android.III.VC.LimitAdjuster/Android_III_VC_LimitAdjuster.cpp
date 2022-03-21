@@ -44,6 +44,8 @@ uintptr_t CModelInfo_GetModelInfo_001EF95C, CTimeModelInfo_FindOtherTimeModel_00
 CTimeModelInfo_FindOtherTimeModel_001FDE74, CGame_ShutDownForRestart_0020D18A, CGame_ShutDownForRestart_0020D1A4;
 uint32_t ID;
 
+uintptr_t CVisibilityPlugins_Initialise_00215AFE, CVisibilityPlugins_Initialise_00215B58;
+uint32_t AlphaEntityList, AlphaEntityListSub, AlphaUnderwaterEntityList, AlphaUnderwaterEntityListSub;
 
 static void InitialiseStoreCBaseModelInfo(void* Memptr, unsigned int numberOfElements, unsigned int elementSize, void (*func)(char* pObject), Android_III_VC_LimitAdjuster::eLimitType type)
 {
@@ -725,6 +727,74 @@ void Android_III_VC_LimitAdjuster::SetColModelPoolLimit(unsigned int nColModel)
 	}
 }
 
+static TARGET_THUMB NAKED void CVisibilityPlugins_Initialise_00215AE8()
+{
+	__asm(
+	".thumb\n"
+		".hidden AlphaEntityList\n"
+		".hidden AlphaEntityListSub\n"
+		".hidden CVisibilityPlugins_Initialise_00215AFE\n"
+		".hidden _Znaj\n"
+		"MOVW R3, #0xBC20\n"
+		"MOVS R2, #0\n"
+		"MOVT R3, #0x4CBE\n"
+		"STR R2, [R5,#4]\n"
+		"STR R3, [R5,#0x14]\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R0, AlphaEntityList)
+		"BL 1f\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R2, AlphaEntityListSub)
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(CVisibilityPlugins_Initialise_00215AFE)
+
+		"1:\n"	// _Znaj
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(_Znaj)
+		);
+}
+
+void Android_III_VC_LimitAdjuster::SetAlphaEntityListLimit(unsigned int nAlphaEntityList)
+{
+	{
+		AlphaEntityList = nAlphaEntityList * 0x40;
+		AlphaEntityListSub = AlphaEntityList - 0x10;
+		_Znaj = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00327E5C);
+		CVisibilityPlugins_Initialise_00215AFE = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00215AFE);
+		patch::NOPinstructions(INSTRUCTION_SET_THUMB, LibAddr + 0x00215B00, 4);
+		patch::RedirectCodeEx(INSTRUCTION_SET_THUMB, LibAddr + 0x00215AE8, (void*)&CVisibilityPlugins_Initialise_00215AE8);
+	}
+}
+
+static TARGET_THUMB NAKED void CVisibilityPlugins_Initialise_00215B42()
+{
+	__asm(
+	".thumb\n"
+		".hidden AlphaUnderwaterEntityList\n"
+		".hidden AlphaUnderwaterEntityListSub\n"
+		".hidden CVisibilityPlugins_Initialise_00215B58\n"
+		".hidden _Znaj\n"
+		"MOVW R3, #0xBC20\n"
+		"MOVS R2, #0\n"
+		"MOVT R3, #0x4CBE\n"
+		"STR R2, [R5,#4]\n"
+		"STR R3, [R5,#0x14]\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R0, AlphaUnderwaterEntityList)
+		"BL 1f\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R2, AlphaUnderwaterEntityListSub)
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(CVisibilityPlugins_Initialise_00215B58)
+
+		"1:\n"	// _Znaj
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(_Znaj)
+		);
+}
+
+void Android_III_VC_LimitAdjuster::SetAlphaUnderwaterEntityListLimit(unsigned int nAlphaUnderwaterEntityList)
+{
+	AlphaUnderwaterEntityList = nAlphaUnderwaterEntityList * 0x40;
+	AlphaUnderwaterEntityListSub = AlphaUnderwaterEntityList - 0x10;
+	_Znaj = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00327E5C);
+	CVisibilityPlugins_Initialise_00215B58 = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00215B58);
+	patch::NOPinstructions(INSTRUCTION_SET_THUMB, LibAddr + 0x00215B5A, 4);
+	patch::RedirectCodeEx(INSTRUCTION_SET_THUMB, LibAddr + 0x00215B42, (void*)&CVisibilityPlugins_Initialise_00215B42);
+}
+
 static TARGET_THUMB NAKED void CTheZones_Init_00189822()
 {
 	__asm(
@@ -969,6 +1039,9 @@ extern "C" __attribute__((visibility("default"))) void plugin_init(cleo_ifs_t * 
 		LimitAdjuster.SetModelIDLimit(ID);
 		LimitAdjuster.SetIDEObjsLimit(inireader.ReadInteger("IDELimit", "Objs", 3885));
 		LimitAdjuster.SetIDETobjLimit(inireader.ReadInteger("IDELimit", "Tobj", 385));
+
+		LimitAdjuster.SetAlphaEntityListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaEntityList", 50));
+		LimitAdjuster.SetAlphaEntityListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaUnderwaterEntityList", 7));
 	}
 }
 

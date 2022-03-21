@@ -10,18 +10,17 @@ public:
 
 	void SetPtrNodePoolLimit(unsigned int nPtrNode);
 	void SetEntryInfoNodePoolLimit(unsigned int nEntryInfoNode);
-
 	void SetPedPoolLimit(unsigned int nPed);
 	void SetVehiclePoolLimit(unsigned int nVehicle);
-
 	void SetBuildingPoolLimit(unsigned int nBuilding);
 	void SetTreadablePoolLimit(unsigned int nTreadable);
 	void SetObjectPoolLimit(unsigned int nObject);
-
 	void SetDummyPoolLimit(unsigned int nDummy);
 	void SetAudioScriptObjectPoolLimit(unsigned int nAudioScriptObject);
-
 	void SetColModelPoolLimit(unsigned int nColModel);
+
+	void SetAlphaEntityListLimit(unsigned int nAlphaEntityList);
+	void SetAlphaUnderwaterEntityListLimit(unsigned int nAlphaUnderwaterEntityList);
 
 	enum eLimitType
 	{
