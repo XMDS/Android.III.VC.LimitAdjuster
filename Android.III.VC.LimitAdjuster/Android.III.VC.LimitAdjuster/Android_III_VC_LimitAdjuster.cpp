@@ -308,7 +308,7 @@ void Android_III_VC_LimitAdjuster::SetWeaponLimit(unsigned int Weapon)
 		unsigned int structSize = sizeof(uint32_t) + Weapon * Size + 0xD3C;
 		WeaponPtr = malloc(structSize);
 		memset(WeaponPtr, NULL, structSize);
-
+		
 		InitialiseStoreCBaseModelInfo(WeaponPtr, Weapon, Size,
 			[](char* pObject)
 			{
@@ -1295,10 +1295,10 @@ extern "C" __attribute__((visibility("default"))) void plugin_init(cleo_ifs_t * 
 		LimitAdjuster.SetModelIDLimit(ID);
 		LimitAdjuster.SetIDEObjsLimit(inireader.ReadInteger("IDELimit", "Objs", 3885));
 		LimitAdjuster.SetIDETobjLimit(inireader.ReadInteger("IDELimit", "Tobj", 385));
-		LimitAdjuster.SetWeaponLimit(inireader.ReadInteger("IDELimit", "Weapon", 37));
+		//LimitAdjuster.SetWeaponLimit(inireader.ReadInteger("IDELimit", "Weapon", 37));
 		//LimitAdjuster.SetIDEHier_VehiclesLimit(inireader.ReadInteger("IDELimit", "Hier", 5), inireader.ReadInteger("IDELimit", "Vehicles", 110));
 		LimitAdjuster.SetIDEVehiclesLimit(inireader.ReadInteger("IDELimit", "Vehicles", 110));
-		LimitAdjuster.SetIDEPedLimit(inireader.ReadInteger("IDELimit", "Ped", 130));
+		//LimitAdjuster.SetIDEPedLimit(inireader.ReadInteger("IDELimit", "Ped", 130));
 		LimitAdjuster.SetIDE2dfxLimit(inireader.ReadInteger("IDELimit", "2dfx", 1210));
 
 		LimitAdjuster.SetAlphaListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaList", 5));
