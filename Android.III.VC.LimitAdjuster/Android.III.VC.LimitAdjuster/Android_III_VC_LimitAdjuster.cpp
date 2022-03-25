@@ -11,7 +11,6 @@
 #define TARGET_THUMB  __attribute__((target("thumb-mode")))
 #endif
 
-// naked
 #ifdef __GNUC__
 #define NAKED __attribute__((naked))
 #else
@@ -36,16 +35,21 @@ uintptr_t _Znaj;
 float WorldMaxX, WorldMaxY, WorldMinX, WorldMinY;
 uintptr_t CTheZones_Init_00189834, CTheZones_Init_00189946;
 
-void *ObjsPtr, *TobjPtr;
+void *ObjsPtr, *TobjPtr, *WeaponPtr, *VehiclesPtr, *PedPtr, *__2dfxPtr;
 uintptr_t CBaseModelInfo_CBaseModelInfo = 0;
+uintptr_t CVehicleModelInfo_CVehicleModelInfo = 0;
 
 void* _ZN10CModelInfo16ms_modelInfoPtrsE, *_ZN10CModelInfo18ms_modelInfoHashesE, *_ZN10CStreaming16ms_aInfoForModelE;
 uintptr_t CModelInfo_GetModelInfo_001EF95C, CTimeModelInfo_FindOtherTimeModel_001FDE2E, CTimeModelInfo_FindOtherTimeModel_001FDE82,
 CTimeModelInfo_FindOtherTimeModel_001FDE74, CGame_ShutDownForRestart_0020D18A, CGame_ShutDownForRestart_0020D1A4;
 uint32_t ID;
 
-uintptr_t CVisibilityPlugins_Initialise_00215AFE, CVisibilityPlugins_Initialise_00215B58;
-uint32_t AlphaEntityList, AlphaEntityListSub, AlphaUnderwaterEntityList, AlphaUnderwaterEntityListSub;
+uintptr_t CVisibilityPlugins_Initialise_00215AFE, CVisibilityPlugins_Initialise_00215B58, CVisibilityPlugins_Initialise_00215A4A, CVisibilityPlugins_Initialise_00215AA4;
+uint32_t AlphaEntityList, AlphaEntityListSub, AlphaUnderwaterEntityList, AlphaUnderwaterEntityListSub,
+AlphaList, AlphaListSub, AlphaBoatAtomicList, AlphaBoatAtomicListSub;
+
+void* gImgFiles, * gImg;
+void* VisibleEntityPtrs;
 
 static void InitialiseStoreCBaseModelInfo(void* Memptr, unsigned int numberOfElements, unsigned int elementSize, void (*func)(char* pObject), Android_III_VC_LimitAdjuster::eLimitType type)
 {
@@ -64,6 +68,41 @@ static void InitialiseStoreCBaseModelInfo(void* Memptr, unsigned int numberOfEle
 		{
 			char* pObject = (char*)Memptr + 0x874 + i * elementSize;
 			call::Method<void, char*, int>(CBaseModelInfo_CBaseModelInfo, pObject, 3);
+			func(pObject);
+		}
+	}
+	else if (type == Android_III_VC_LimitAdjuster::eLimitType::weapon)
+	{
+		for (unsigned int i = 0; i < numberOfElements; i++)
+		{
+			char* pObject = (char*)Memptr + 0xD3C + i * elementSize;
+			call::Method<void, char*, int>(CBaseModelInfo_CBaseModelInfo, pObject, 4);
+			func(pObject);
+		}
+	}
+	else if (type == Android_III_VC_LimitAdjuster::hier)
+	{
+		for (unsigned int i = 0; i < numberOfElements; i++)
+		{
+			char* pObject = (char*)Memptr + 0xBE0 + i * elementSize;
+			call::Method<void, char*, int>(CBaseModelInfo_CBaseModelInfo, pObject, 5);
+			func(pObject);
+		}
+	}
+	else if (type == Android_III_VC_LimitAdjuster::eLimitType::vehicles)
+	{
+		for (unsigned int i = 0; i < numberOfElements; i++)
+		{
+			char* pObject = (char*)Memptr + 0xD8C + i * elementSize;
+			call::Method<void>(CVehicleModelInfo_CVehicleModelInfo, pObject);
+		}	
+	}
+	else if (type == Android_III_VC_LimitAdjuster::eLimitType::ped)
+	{
+		for (unsigned int i = 0; i < numberOfElements; i++)
+		{
+			char* pObject = (char*)Memptr + 0x238 + i * elementSize;
+			call::Method<void, char*, int>(CBaseModelInfo_CBaseModelInfo, pObject, 7);
 			func(pObject);
 		}
 	}
@@ -182,9 +221,9 @@ void Android_III_VC_LimitAdjuster::SetModelIDLimit(unsigned int mID)
 		//memset(_ZN10CStreaming16ms_aInfoForModelE, NULL, 0x77C4 + mID);
 
 		_ZN10CModelInfo16ms_modelInfoPtrsE = (void*)((uintptr_t)_ZN10CModelInfo16ms_modelInfoPtrsE + 4);
-		patch::SetUint32(LibAddr + 0x00394D94, (uint32_t)_ZN10CModelInfo16ms_modelInfoPtrsE);
-		patch::SetUint32(LibAddr + 0x00396394, (uint32_t)_ZN10CModelInfo18ms_modelInfoHashesE);
-		//patch::SetUint32(LibAddr + 0x0039603C, (uint32_t)_ZN10CStreaming16ms_aInfoForModelE);
+		patch::SetPointer(LibAddr + 0x00394D94, _ZN10CModelInfo16ms_modelInfoPtrsE);
+		patch::SetPointer(LibAddr + 0x00396394, _ZN10CModelInfo18ms_modelInfoHashesE);
+		//patch::SetPointer(LibAddr + 0x0039603C, _ZN10CStreaming16ms_aInfoForModelE);
 		
 		CModelInfo_GetModelInfo_001EF95C = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x001EF95C);
 		patch::RedirectCodeEx(INSTRUCTION_SET_THUMB, LibAddr + 0x001EF94C, (void*)&CModelInfo_GetModelInfo_001EF94C);
@@ -252,12 +291,151 @@ void Android_III_VC_LimitAdjuster::SetIDETobjLimit(unsigned int Tobj)
 				*(uintptr_t*)(pObject) = Address_vtable;
 			}
 		, tobj);
-		patch::SetPointer(LibAddr + 0xB3904, (char*)(TobjPtr)-(LibAddr + 0xB373E));
-		patch::SetPointer(LibAddr + 0xB3908, (char*)(TobjPtr)-(LibAddr + 0xB376C));
-		patch::SetPointer(LibAddr + 0x1EF8EC, (char*)(TobjPtr)-(LibAddr + 0x1EF776));
-		patch::SetPointer(LibAddr + 0x1EF910, (char*)(TobjPtr)-(LibAddr + 0x1EF8B8));
-		patch::SetPointer(LibAddr + 0x1EFC48, (char*)(TobjPtr)-(LibAddr + 0x1EFADA));
-		patch::SetPointer(LibAddr + 0x1EFCC8, (char*)(TobjPtr)-(LibAddr + 0x1EFC8E));
+		patch::SetPointer(LibAddr + 0xB3904, (char*)(TobjPtr) - (LibAddr + 0xB373E));
+		patch::SetPointer(LibAddr + 0xB3908, (char*)(TobjPtr) - (LibAddr + 0xB376C));
+		patch::SetPointer(LibAddr + 0x1EF8EC, (char*)(TobjPtr) - (LibAddr + 0x1EF776));
+		patch::SetPointer(LibAddr + 0x1EF910, (char*)(TobjPtr) - (LibAddr + 0x1EF8B8));
+		patch::SetPointer(LibAddr + 0x1EFC48, (char*)(TobjPtr) - (LibAddr + 0x1EFADA));
+		patch::SetPointer(LibAddr + 0x1EFCC8, (char*)(TobjPtr) - (LibAddr + 0x1EFC8E));
+	}
+}
+
+void Android_III_VC_LimitAdjuster::SetWeaponLimit(unsigned int Weapon)
+{
+	if (Weapon > 37)
+	{
+		unsigned int Size = 0x6C;
+		unsigned int structSize = sizeof(uint32_t) + Weapon * Size + 0xD3C;
+		WeaponPtr = malloc(structSize);
+		memset(WeaponPtr, NULL, structSize);
+
+		InitialiseStoreCBaseModelInfo(WeaponPtr, Weapon, Size,
+			[](char* pObject)
+			{
+				uintptr_t Address_vtable = LibAddr + 0x00392770;
+
+				*(uintptr_t*)(pObject) = Address_vtable;
+			}
+		, weapon);
+		patch::SetPointer(LibAddr + 0xB3918, (char*)(WeaponPtr) - (LibAddr + 0xB3786));
+		patch::SetPointer(LibAddr + 0xB391C, (char*)(WeaponPtr) - (LibAddr + 0xB37B4));
+		patch::SetPointer(LibAddr + 0x1EF8F0, (char*)(WeaponPtr) - (LibAddr + 0x1EF7A0));
+		patch::SetPointer(LibAddr + 0x1EF914, (char*)(WeaponPtr) - (LibAddr + 0x1EF8BC));
+		patch::SetPointer(LibAddr + 0x1EFC4C, (char*)(WeaponPtr) - (LibAddr + 0x1EFADE));
+		patch::SetPointer(LibAddr + 0x1EFD18, (char*)(WeaponPtr) - (LibAddr + 0x1EFCDE));
+	}
+}
+
+/*
+void* Hier_VehiclesPtr;
+
+void Android_III_VC_LimitAdjuster::SetIDEHier_VehiclesLimit(unsigned int Hier, unsigned int Vehicles)
+{
+	if (Vehicles > 110 || Hier > 5)
+	{
+		unsigned int HierSize = 0x54;
+		unsigned int VehiclesSize = 0x198;
+		unsigned int structSize;
+		if (Vehicles > 110)
+		{
+			if (Hier > 5)
+				structSize = sizeof(uint32_t) + Vehicles * VehiclesSize + 0xD8C + Hier * HierSize + 0xBE0;
+			else
+				structSize = sizeof(uint32_t) + Vehicles * VehiclesSize + 0xD8C + 5 * HierSize + 0xBE0;
+		}
+		else if (Hier > 5)
+		{
+			if (Vehicles > 110)
+				structSize = sizeof(uint32_t) + Vehicles * VehiclesSize + 0xD8C + Hier * HierSize + 0xBE0;
+			else
+				structSize = sizeof(uint32_t) + 110 * VehiclesSize + 0xD8C + Hier * HierSize + 0xBE0;
+		}
+		Hier_VehiclesPtr = malloc(structSize);
+		memset(Hier_VehiclesPtr, NULL, structSize);
+		//InitialiseStoreCBaseModelInfo((char*)Hier_VehiclesPtr + Hier * HierSize + 0xBE0 + 4, Vehicles, VehiclesSize, nullptr, vehicles);
+		InitialiseStoreCBaseModelInfo(Hier_VehiclesPtr, Hier, HierSize,
+			[](char* pObject)
+			{
+				uintptr_t Address_vtable = LibAddr + 0x00392658;
+
+				*(uintptr_t*)(pObject) = Address_vtable;
+			}
+		, hier);
+		patch::SetPointer(LibAddr + 0xB3928, (char*)(Hier_VehiclesPtr) - (LibAddr + 0xB37C6));
+		//patch::SetPointer(LibAddr + 0xB3930, (char*)((char*)Hier_VehiclesPtr + Hier * HierSize + 0xBE0) - (LibAddr + 0xB37F2));
+		//patch::SetPointer(LibAddr + 0xB393C, (char*)((char*)Hier_VehiclesPtr + Hier * HierSize + 0xBE0) - (LibAddr + 0xB3828));
+		patch::SetPointer(LibAddr + 0x1EF8F4, (char*)(Hier_VehiclesPtr) - (LibAddr + 0x1EF7CA));
+		//patch::SetPointer(LibAddr + 0x1EF8F8, (char*)((char*)Hier_VehiclesPtr + Hier * HierSize + 0xBE0) - (LibAddr + 0x1EF7F4));
+		//patch::SetPointer(LibAddr + 0x1EF924, (char*)((char*)Hier_VehiclesPtr + Hier * HierSize + 0xBE0) - (LibAddr + 0x1EF8CC));
+		patch::SetPointer(LibAddr + 0x1EFC5C, (char*)(Hier_VehiclesPtr) - (LibAddr + 0x1EFAEE));
+		patch::SetPointer(LibAddr + 0x1EFD68, (char*)(Hier_VehiclesPtr) - (LibAddr + 0x1EFD2C));
+		//patch::SetPointer(LibAddr + 0x1EFDDC, (char*)((char*)Hier_VehiclesPtr + Hier * HierSize + 0xBE0) - (LibAddr + 0x1EFD7E));
+	}
+}*/
+
+
+void Android_III_VC_LimitAdjuster::SetIDEVehiclesLimit(unsigned int Vehicles)
+{
+	if (Vehicles > 110)
+	{
+		unsigned int Size = 0x198;
+		unsigned int structSize = sizeof(uint32_t) + Vehicles * Size + 0xD8C;
+		VehiclesPtr = malloc(structSize);
+		memset(VehiclesPtr, NULL, structSize);
+		InitialiseStoreCBaseModelInfo(VehiclesPtr, Vehicles, Size, nullptr, vehicles);
+		
+		patch::SetPointer(LibAddr + 0xB3930, (char*)(VehiclesPtr) - (LibAddr + 0xB37F2));
+		patch::SetPointer(LibAddr + 0xB393C, (char*)(VehiclesPtr) - (LibAddr + 0xB3828));
+		patch::SetPointer(LibAddr + 0x1EF8F8, (char*)(VehiclesPtr) - (LibAddr + 0x1EF7F4));
+		patch::SetPointer(LibAddr + 0x1EF924, (char*)(VehiclesPtr) - (LibAddr + 0x1EF8CC));
+		patch::SetPointer(LibAddr + 0x1EFC5C, (char*)(VehiclesPtr) - (LibAddr + 0x1EFAEE));
+		patch::SetPointer(LibAddr + 0x1EFDDC, (char*)(VehiclesPtr) - (LibAddr + 0x1EFD7E));
+	}
+}
+
+void Android_III_VC_LimitAdjuster::SetIDEPedLimit(unsigned int Ped)
+{
+	if (Ped > 130)
+	{
+		unsigned int Size = 0x6C;
+		unsigned int structSize = sizeof(uint32_t) + Ped * Size + 0x238;
+		PedPtr = malloc(structSize);
+		memset(PedPtr, NULL, structSize);
+
+		InitialiseStoreCBaseModelInfo(PedPtr, Ped, Size,
+			[](char* pObject)
+			{
+				uintptr_t Address_vtable = LibAddr + 0x003926C8;
+
+				*(uintptr_t*)(pObject) = Address_vtable;
+			}
+		, ped);
+		patch::SetPointer(LibAddr + 0xB394C, (char*)(PedPtr) - (LibAddr + 0xB3842));
+		patch::SetPointer(LibAddr + 0xB3950, (char*)(PedPtr) - (LibAddr + 0xB3872));
+		patch::SetPointer(LibAddr + 0x1EF8FC, (char*)(PedPtr) - (LibAddr + 0x1EF820));
+		patch::SetPointer(LibAddr + 0x1EF918, (char*)(PedPtr) - (LibAddr + 0x1EF8C0));
+		patch::SetPointer(LibAddr + 0x1EFC50, (char*)(PedPtr) - (LibAddr + 0x1EFAE2));
+		patch::SetPointer(LibAddr + 0x1EFE2C, (char*)(PedPtr) - (LibAddr + 0x1EFDF0));
+	}
+}
+
+void Android_III_VC_LimitAdjuster::SetIDE2dfxLimit(unsigned int _2dfx)
+{
+	if (_2dfx > 1210)
+	{
+		unsigned int Size = 0x34;
+		unsigned int structSize = _2dfx * Size + 0x38;
+		__2dfxPtr = malloc(structSize);
+		memset(__2dfxPtr, NULL, structSize);
+
+		patch::SetPointer(LibAddr + 0xB395C, (char*)(__2dfxPtr) - (LibAddr + 0xB388A));
+		patch::SetPointer(LibAddr + 0xB3960, (char*)(__2dfxPtr) - (LibAddr + 0xB38AE));
+		patch::SetPointer(LibAddr + 0x1EF740, (char*)(__2dfxPtr) - (LibAddr + 0x1EF724));
+		patch::SetPointer(LibAddr + 0x1EF900, (char*)(__2dfxPtr) - (LibAddr + 0x1EF84A));
+		patch::SetPointer(LibAddr + 0x1EF904, (char*)(__2dfxPtr) - (LibAddr + 0x1EF858));
+		patch::SetPointer(LibAddr + 0x1EF91C, (char*)(__2dfxPtr) - (LibAddr + 0x1EF8C4));
+		patch::SetPointer(LibAddr + 0x1EFC54, (char*)(__2dfxPtr) - (LibAddr + 0x1EFAE6));
+		patch::SetPointer(LibAddr + 0x1EFE90, (char*)(__2dfxPtr) - (LibAddr + 0x1EFE8E));
 	}
 }
 
@@ -795,6 +973,94 @@ void Android_III_VC_LimitAdjuster::SetAlphaUnderwaterEntityListLimit(unsigned in
 	patch::RedirectCodeEx(INSTRUCTION_SET_THUMB, LibAddr + 0x00215B42, (void*)&CVisibilityPlugins_Initialise_00215B42);
 }
 
+static TARGET_THUMB NAKED void CVisibilityPlugins_Initialise_00215A40()
+{
+	__asm(
+	".thumb\n"
+		".hidden AlphaList\n"
+		".hidden AlphaListSub\n"
+		".hidden CVisibilityPlugins_Initialise_00215A4A\n"
+		".hidden _Znaj\n"
+		"PUSH {R3-R7,LR}\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R0, AlphaList)
+		"BL 1f\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R2, AlphaListSub)
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(CVisibilityPlugins_Initialise_00215A4A)
+
+		"1:\n"	// _Znaj
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(_Znaj)
+		);
+}
+
+void Android_III_VC_LimitAdjuster::SetAlphaListLimit(unsigned int nAlphaList)
+{
+	AlphaList = nAlphaList * 0x40;
+	AlphaListSub = AlphaList - 0x10;
+	_Znaj = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00327E5C);
+	CVisibilityPlugins_Initialise_00215A4A = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00215A4A);
+	patch::NOPinstructions(INSTRUCTION_SET_THUMB, LibAddr + 0x00215A4C, 4);
+	patch::RedirectCodeEx(INSTRUCTION_SET_THUMB, LibAddr + 0x00215A40, (void*)&CVisibilityPlugins_Initialise_00215A40);
+}
+
+static TARGET_THUMB NAKED void CVisibilityPlugins_Initialise_00215A8E()
+{
+	__asm(
+	".thumb\n"
+		".hidden AlphaBoatAtomicList\n"
+		".hidden AlphaBoatAtomicListSub\n"
+		".hidden CVisibilityPlugins_Initialise_00215AA4\n"
+		".hidden _Znaj\n"
+		"MOVW R3, #0xBC20\n"
+		"MOVS R2, #0\n"
+		"MOVT R3, #0x4CBE\n"
+		"STR R2, [R5,#4]\n"
+		"STR R3, [R5,#0x14]\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R0, AlphaBoatAtomicList)
+		"BL 1f\n"
+		ASM_LOAD_4BYTE_UNSIGNED_VALUE_STORED_ON_SYMBOL(R2, AlphaBoatAtomicListSub)
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(CVisibilityPlugins_Initialise_00215AA4)
+
+		"1:\n"	// _Znaj
+		ASM_JUMP_TO_ADDRESS_STORED_ON_SYMBOL(_Znaj)
+		);
+}
+
+void Android_III_VC_LimitAdjuster::SetAlphaBoatAtomicListLimit(unsigned int nAlphaBoatAtomicList)
+{
+	AlphaBoatAtomicList = nAlphaBoatAtomicList * 0x40;
+	AlphaBoatAtomicListSub = AlphaBoatAtomicList - 0x10;
+	_Znaj = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00327E5C);
+	CVisibilityPlugins_Initialise_00215AA4 = ASM_GET_THUMB_ADDRESS_FOR_JUMP(LibAddr + 0x00215AA4);
+	patch::NOPinstructions(INSTRUCTION_SET_THUMB, LibAddr + 0x00215AA6, 4);
+	patch::RedirectCodeEx(INSTRUCTION_SET_THUMB, LibAddr + 0x00215A8E, (void*)&CVisibilityPlugins_Initialise_00215A8E);
+}
+
+void Android_III_VC_LimitAdjuster::SetImageLimit(unsigned int img)
+{
+	if (img > 16)
+	{
+		gImgFiles = malloc(img * 4);
+		gImg = malloc(img * 0x20 + 4);
+		patch::SetPointer(LibAddr + 0x00394C8C, gImgFiles);
+		patch::SetPointer(LibAddr + 0x0014094C, (char*)(gImg) - (LibAddr + 0x1408E6));
+		patch::SetPointer(LibAddr + 0x00140954, (char*)(gImg) - (LibAddr + 0x14090A));
+		patch::SetPointer(LibAddr + 0x00140978, (char*)(gImg) - (LibAddr + 0x14096A));
+		patch::SetPointer(LibAddr + 0x001409E0, (char*)(gImg) - (LibAddr + 0x140990));
+		patch::SetPointer(LibAddr + 0x001409EC, (char*)(gImg) - (LibAddr + 0x1409D8));
+		patch::SetPointer(LibAddr + 0x00140A40, (char*)(gImg) - (LibAddr + 0x1409FC));
+		patch::SetPointer(LibAddr + 0x00140A50, (char*)(gImg) - (LibAddr + 0x140A4E));
+	}
+}
+
+void Android_III_VC_LimitAdjuster::SetVisibleEntityPtrs(unsigned int nVisibleEntityPtrs)
+{
+	if (nVisibleEntityPtrs > 2000)
+	{
+		VisibleEntityPtrs = malloc(nVisibleEntityPtrs * 4);
+		patch::SetPointer(LibAddr + 0x003946FC, VisibleEntityPtrs);
+	}
+}
+
 static TARGET_THUMB NAKED void CTheZones_Init_00189822()
 {
 	__asm(
@@ -892,11 +1158,6 @@ extern "C" __attribute__((visibility("default"))) void plugin_init(cleo_ifs_t * 
 		float ProjectileMaxX = inireader.ReadFloat("WorldBoundary", "ProjectileMaxX", 1590.0);
 		float ProjectileMaxY = inireader.ReadFloat("WorldBoundary", "ProjectileMaxY", 1990.0);
 
-		float PlaneTrailsMinX = inireader.ReadFloat("WorldBoundary", "PlaneTrailsMinX", 1200.0);
-		float PlaneTrailsMinY = inireader.ReadFloat("WorldBoundary", "PlaneTrailsMinY", -1600.0);
-		float PlaneTrailsMaxX = inireader.ReadFloat("WorldBoundary", "PlaneTrailsMaxX", 1590.0);
-		float PlaneTrailsMaxY = inireader.ReadFloat("WorldBoundary", "PlaneTrailsMaxY", 1000.0);
-
 		patch::SetFloat(LibAddr + 0x0025B950, AircraftHeight);//CVehicle::FlyingControl
 		patch::SetFloat(LibAddr + 0x001858BC, PedZ);//CWorld::RemoveFallenPeds
 		patch::SetFloat(LibAddr + 0x001859FC, CarZ);//CWorld::RemoveFallenCars
@@ -918,12 +1179,6 @@ extern "C" __attribute__((visibility("default"))) void plugin_init(cleo_ifs_t * 
 		patch::SetFloat(LibAddr + 0x00267A00, ProjectileMaxX);
 		patch::SetFloat(LibAddr + 0x00267A04, ProjectileMinY);
 		patch::SetFloat(LibAddr + 0x00267A08, ProjectileMaxY);
-
-		//CPlaneTrails::Update
-		patch::SetFloat(LibAddr + 0x001DF268, PlaneTrailsMaxX);
-		patch::SetFloat(LibAddr + 0x001DF26C, PlaneTrailsMinX);
-		patch::SetFloat(LibAddr + 0x001DF270, PlaneTrailsMaxY);
-		patch::SetFloat(LibAddr + 0x001DF274, PlaneTrailsMinY);
 		
 		//CWorld::ProcessLineOfSight
 		patch::SetFloat(LibAddr + 0x00187FF4, WorldMinX);
@@ -1034,14 +1289,25 @@ extern "C" __attribute__((visibility("default"))) void plugin_init(cleo_ifs_t * 
 		LimitAdjuster.SetColModelPoolLimit(ColModel);
 
 		CBaseModelInfo_CBaseModelInfo = (uintptr_t)cleo->GetMainLibrarySymbol("_ZN14CBaseModelInfoC2E13ModelInfoType");
+		CVehicleModelInfo_CVehicleModelInfo = (uintptr_t)cleo->GetMainLibrarySymbol("_ZN17CVehicleModelInfoC2Ev");
 
 		ID = inireader.ReadInteger("IDELimit", "ID", 6500);
 		LimitAdjuster.SetModelIDLimit(ID);
 		LimitAdjuster.SetIDEObjsLimit(inireader.ReadInteger("IDELimit", "Objs", 3885));
 		LimitAdjuster.SetIDETobjLimit(inireader.ReadInteger("IDELimit", "Tobj", 385));
+		LimitAdjuster.SetWeaponLimit(inireader.ReadInteger("IDELimit", "Weapon", 37));
+		//LimitAdjuster.SetIDEHier_VehiclesLimit(inireader.ReadInteger("IDELimit", "Hier", 5), inireader.ReadInteger("IDELimit", "Vehicles", 110));
+		LimitAdjuster.SetIDEVehiclesLimit(inireader.ReadInteger("IDELimit", "Vehicles", 110));
+		LimitAdjuster.SetIDEPedLimit(inireader.ReadInteger("IDELimit", "Ped", 130));
+		LimitAdjuster.SetIDE2dfxLimit(inireader.ReadInteger("IDELimit", "2dfx", 1210));
 
+		LimitAdjuster.SetAlphaListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaList", 5));
+		LimitAdjuster.SetAlphaBoatAtomicListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaBoatAtomicList", 5));
 		LimitAdjuster.SetAlphaEntityListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaEntityList", 50));
-		LimitAdjuster.SetAlphaEntityListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaUnderwaterEntityList", 7));
+		LimitAdjuster.SetAlphaUnderwaterEntityListLimit(inireader.ReadInteger("VisibilityLimit", "AlphaUnderwaterEntityList", 7));
+		
+		LimitAdjuster.SetImageLimit(inireader.ReadInteger("ImageLimit", "IMG", 16));
+		LimitAdjuster.SetVisibleEntityPtrs(inireader.ReadInteger("Renderer", "VisibleEntityPtrs", 2000));
 	}
 }
 
